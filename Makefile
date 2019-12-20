@@ -7,3 +7,8 @@ day1:
 day2:
 	cd day02 && go build
 	cd day02 && ./day02
+
+.PHONY: day3
+day3:
+	cd day03 && go build
+	cd day03 && ./day03
