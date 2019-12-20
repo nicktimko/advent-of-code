@@ -56,15 +56,17 @@ func wireLen(wire []wireSegment) (sum int) {
 	return
 }
 
-func pointsCrossed(wire []wireSegment) map[[2]int64]int8 {
-	pts := make(map[[2]int64]int8)
+func pointsCrossed(wire []wireSegment) map[[2]int64]int64 {
+	pts := make(map[[2]int64]int64)
 
 	pt := [2]int64{0, 0}
+	var step int64 = 0
 	for _, seg := range wire {
 		for i := 0; i < seg.length; i++ {
+			step += 1
 			pt[0] += seg.dir[0]
 			pt[1] += seg.dir[1]
-			pts[pt] = 1 // dummy value, doesn't matter.
+			pts[pt] = step
 		}
 	}
 
@@ -99,32 +101,38 @@ func main() {
 	fmt.Printf("       length:   %6d\n", wireLen(wire2))
 	fmt.Printf("       points:   %6d\n", len(w2pts))
 
-	intersections := make(map[[2]int64]int8)
+	intersections := make(map[[2]int64]int64)
 	var min_intersection int64 = 0xFFF_FFFF_FFFF_FFFF
+	var shortest_sum int64 = 0xFFF_FFFF_FFFF_FFFF
 
-	for p1, _ := range w1pts {
-		if _, ok := w2pts[p1]; ok {
+	for p1, p1d := range w1pts {
+		if p2d, ok := w2pts[p1]; ok {
 			intersections[p1] = 1
 			dist := AbsInt(p1[0]) + AbsInt(p1[1])
 			if dist < min_intersection {
 				min_intersection = dist
 			}
+			total_sum := p1d + p2d
+			if total_sum < shortest_sum {
+				shortest_sum = total_sum
+			}
 		}
 	}
 
 	fmt.Printf("intersections:   %6d\n", len(intersections))
-	fmt.Printf("closest dist :   %6d\n", min_intersection)
-	// sum = 0
-	// for _, seg := range wire2 {
-	// 	sum += seg.length
-	// }
-	// fmt.Println("wire 2 pts: " + strconv.Itoa(sum))
-
-	// fmt.Println("part 2: " + strconv.Itoa(fuelReq))
+	fmt.Printf("closest dist:    %6d\n", min_intersection)
+	fmt.Printf("short from src:  %6d\n", shortest_sum)
 	/*
 		Output
 		---
-		part 1: 3297909
-		part 2: 4943994
+		wire 1 segments:    301
+			length:   147712
+			points:   147557
+		wire 2 segments:    301
+			length:   153436
+			points:   153295
+		intersections:       43
+		closest dist:       403
+		short from src:    4158
 	*/
 }
