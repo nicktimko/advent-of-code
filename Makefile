@@ -12,3 +12,13 @@ day2:
 day3:
 	cd day03 && go build
 	cd day03 && ./day03
+
+.PHONY: day4
+day4:
+	cd day04 && go build
+	cd day04 && ./day04
+
+.PHONY: day5
+day5:
+	cd day05 && go build
+	cd day05 && ./day05
