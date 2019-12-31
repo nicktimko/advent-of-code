@@ -2,7 +2,7 @@
 https://adventofcode.com/2019/day/2
 */
 
-package main
+package day02
 
 import (
 	"bufio"
@@ -11,45 +11,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/nicktimko/aoc-2019-golang/intcode"
 )
-
-func icAdd(tape []int, ptr *int) bool {
-	sum := tape[tape[*ptr+1]] + tape[tape[*ptr+2]]
-	targetIndex := tape[*ptr+3]
-	tape[targetIndex] = sum
-	// fmt.Println("ADD wrote", sum, "to index", targetIndex)
-
-	*ptr += 4
-	return false
-}
-
-func icMul(tape []int, ptr *int) bool {
-	product := tape[tape[*ptr+1]] * tape[tape[*ptr+2]]
-	targetIndex := tape[*ptr+3]
-	tape[targetIndex] = product
-	// fmt.Println("MUL wrote", product, "to index", targetIndex)
-
-	*ptr += 4
-	return false
-}
-
-func icHalt(tape []int, ptr *int) bool {
-	*ptr++
-	return true
-}
-
-func intcodeProcessor(tape []int) {
-	icOps := map[int](func([]int, *int) bool){
-		1:  icAdd,
-		2:  icMul,
-		99: icHalt,
-	}
-	ptr := 0
-	halt := false
-	for !halt {
-		halt = icOps[tape[ptr]](tape, &ptr)
-	}
-}
 
 func part2(tape []int) int {
 	target := 19690720
@@ -60,7 +24,7 @@ func part2(tape []int) int {
 			workingTape[1] = noun
 			workingTape[2] = verb
 
-			intcodeProcessor(workingTape)
+			intcode.Processor(workingTape)
 
 			if workingTape[0] == target {
 				return noun*100 + verb
@@ -71,8 +35,9 @@ func part2(tape []int) int {
 	return -1
 }
 
-func main() {
-	file, err := os.Open("input.txt")
+// Solve Day 2
+func Solve() {
+	file, err := os.Open("inputs/day02.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,7 +65,7 @@ func main() {
 	tape[1] = 12
 	tape[2] = 2
 
-	intcodeProcessor(tape)
+	intcode.Processor(tape)
 
 	fmt.Println("Part 1:", tape[0])
 

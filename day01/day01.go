@@ -2,7 +2,7 @@
 https://adventofcode.com/2019/day/1
 */
 
-package main
+package day01
 
 import (
 	"bufio"
@@ -12,8 +12,10 @@ import (
 	"strconv"
 )
 
-func main() {
-	file, err := os.Open("input.txt")
+// Solve Day 1
+func Solve() {
+	// something
+	file, err := os.Open("inputs/day01.txt")
 	if err != nil {
 		log.Fatal(err)
 	}

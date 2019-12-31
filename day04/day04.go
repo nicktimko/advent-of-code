@@ -2,7 +2,7 @@
 https://adventofcode.com/2019/day/4
 */
 
-package main
+package day04
 
 import "fmt"
 
@@ -73,7 +73,8 @@ func validPasswordStep2(digits [6]int8) bool {
 	return false
 }
 
-func main() {
+// Solve Day 4
+func Solve() {
 
 	nCheckedPasswords := 0
 	nValidPasswordsStep1 := 0

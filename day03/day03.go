@@ -2,7 +2,7 @@
 https://adventofcode.com/2019/day/3
 */
 
-package main
+package day03
 
 import (
 	"bufio"
@@ -80,8 +80,9 @@ func AbsInt(n int64) int64 {
 	return n
 }
 
-func main() {
-	file, err := os.Open("input.txt")
+// Solve Day 3
+func Solve() {
+	file, err := os.Open("inputs/day03.txt")
 	if err != nil {
 		log.Fatal(err)
 	}

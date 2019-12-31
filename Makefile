@@ -1,24 +1,19 @@
-.PHONY: day1
-day1:
-	cd day01 && go build
-	cd day01 && ./day01
+SHELL := bash
+.ONESHELL:
+.SHELLFLAGS := -o errexit -o nounset -o pipefail -c
+.DELETE_ON_ERROR:
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
 
-.PHONY: day2
-day2:
-	cd day02 && go build
-	cd day02 && ./day02
+ifeq ($(origin .RECIPEPREFIX), undefined)
+  $(error This Make does not support .RECIPEPREFIX. Please use GNU Make 4.0 or later)
+endif
+.RECIPEPREFIX = >
 
-.PHONY: day3
-day3:
-	cd day03 && go build
-	cd day03 && ./day03
+aoc2019:
+> go build -o aoc2019
 
-.PHONY: day4
-day4:
-	cd day04 && go build
-	cd day04 && ./day04
-
-.PHONY: day5
-day5:
-	cd day05 && go build
-	cd day05 && ./day05
+# "make 1" -> solve for day 1
+%:
+> make aoc2019
+> ./aoc2019 -day=$@
