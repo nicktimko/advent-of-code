@@ -33,8 +33,7 @@ func monotonicDigits(digits []int8) bool {
 	return true
 }
 
-func validPasswordStep1(password int32) bool {
-	digits := decomposePassword(password)
+func validPasswordStep1(digits [6]int8) bool {
 	if !monotonicDigits(digits[:]) {
 		return false
 	}
@@ -51,24 +50,58 @@ func validPasswordStep1(password int32) bool {
 	return sameFound
 }
 
+func validPasswordStep2(digits [6]int8) bool {
+	currentRunLen := 0
+	var currentRunDigit int8 = -1
+	for _, d := range digits {
+		if d != currentRunDigit {
+			// new run
+			if currentRunLen == 2 {
+				return true
+			}
+			currentRunLen = 1
+			currentRunDigit = d
+		} else {
+			// continuing run
+			currentRunLen++
+		}
+	}
+	if currentRunLen == 2 {
+		// check at end of digits
+		return true
+	}
+	return false
+}
+
 func main() {
 
 	nCheckedPasswords := 0
-	nValidPasswords := 0
+	nValidPasswordsStep1 := 0
+	nValidPasswordsStep2 := 0
+
+	var digits [6]int8
 
 	for password := rangeStart; password <= rangeEnd; password++ {
 		nCheckedPasswords++
-		if validPasswordStep1(password) {
-			nValidPasswords++
+
+		digits = decomposePassword(password)
+
+		if validPasswordStep1(digits) {
+			nValidPasswordsStep1++
+			if validPasswordStep2(digits) {
+				nValidPasswordsStep2++
+			}
 		}
 	}
 
-	fmt.Printf("passwords in range: %6d\n", nCheckedPasswords)
-	fmt.Printf("valid             : %6d\n", nValidPasswords)
+	fmt.Printf("passwords in range   : %6d\n", nCheckedPasswords)
+	fmt.Printf("valid for first step : %6d\n", nValidPasswordsStep1)
+	fmt.Printf("valid for second step: %6d\n", nValidPasswordsStep2)
 	/*
 		Output
 		========
-		passwords in range: 518199
-		valid             :   1764
+		passwords in range   : 518199
+		valid for first step :   1764
+		valid for second step:   1196
 	*/
 }
