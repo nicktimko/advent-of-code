@@ -1,10 +1,12 @@
 package intcode
 
+import "log"
+
 // ParameterMode ...
 type ParameterMode int
 
 const (
-	modePosition  ParameterMode = 0
+	modeIndirect  ParameterMode = 0
 	modeImmediate ParameterMode = 1
 )
 
@@ -28,12 +30,26 @@ func decodeOp(opcode int) OpCode {
 	return oc
 }
 
-func getParam(pm [3]ParameterMode) {
-
+func getParam(tape []int, ptr *int, n int, modes [3]ParameterMode) (int, bool) {
+	switch modes[n] {
+	case modeImmediate:
+		return tape[*ptr+n+1], false
+	case modeIndirect:
+		return tape[tape[*ptr+n+1]], false
+	}
+	return 0, true
 }
 
 func opAdd(tape []int, ptr *int, pm [3]ParameterMode) bool {
-	sum := tape[tape[*ptr+1]] + tape[tape[*ptr+2]]
+	var p [2]int
+	var err bool
+	for i := range p {
+		p[i], err = getParam(tape, ptr, i, pm)
+		if err {
+			log.Fatalf("error in parameter %d at instruction %d", 0, *ptr)
+		}
+	}
+	sum := p[0] + p[1]
 	targetIndex := tape[*ptr+3]
 	tape[targetIndex] = sum
 	// fmt.Println("ADD wrote", sum, "to index", targetIndex)
@@ -43,7 +59,15 @@ func opAdd(tape []int, ptr *int, pm [3]ParameterMode) bool {
 }
 
 func opMul(tape []int, ptr *int, pm [3]ParameterMode) bool {
-	product := tape[tape[*ptr+1]] * tape[tape[*ptr+2]]
+	var p [2]int
+	var err bool
+	for i := range p {
+		p[i], err = getParam(tape, ptr, i, pm)
+		if err {
+			log.Fatalf("error in parameter %d at instruction %d", 0, *ptr)
+		}
+	}
+	product := p[0] * p[1]
 	targetIndex := tape[*ptr+3]
 	tape[targetIndex] = product
 	// fmt.Println("MUL wrote", product, "to index", targetIndex)
