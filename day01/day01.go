@@ -39,10 +39,4 @@ func Solve() {
 	}
 	fmt.Println("part 1: " + strconv.Itoa(fuelReqNaive))
 	fmt.Println("part 2: " + strconv.Itoa(fuelReq))
-	/*
-		Output
-		---
-		part 1: 3297909
-		part 2: 4943994
-	*/
 }

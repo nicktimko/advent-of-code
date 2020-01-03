@@ -1,0 +1,5 @@
+Day 4 Output
+==============
+passwords in range   : 518199
+valid for first step :   1764
+valid for second step:   1196

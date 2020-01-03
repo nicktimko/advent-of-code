@@ -71,10 +71,4 @@ func Solve() {
 
 	nounverb := part2(originalTape)
 	fmt.Println("Part 2:", nounverb)
-	/*
-		Output
-		---
-		Part 1: 5290681
-		Part 2: 5741
-	*/
 }

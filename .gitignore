@@ -4,4 +4,4 @@
 !**/*.md
 !**/
 !.gitignore
-!Makefile
+!GNUmakefile

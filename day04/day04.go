@@ -98,11 +98,4 @@ func Solve() {
 	fmt.Printf("passwords in range   : %6d\n", nCheckedPasswords)
 	fmt.Printf("valid for first step : %6d\n", nValidPasswordsStep1)
 	fmt.Printf("valid for second step: %6d\n", nValidPasswordsStep2)
-	/*
-		Output
-		========
-		passwords in range   : 518199
-		valid for first step :   1764
-		valid for second step:   1196
-	*/
 }

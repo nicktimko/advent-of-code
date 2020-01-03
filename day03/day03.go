@@ -123,17 +123,4 @@ func Solve() {
 	fmt.Printf("intersections:   %6d\n", len(intersections))
 	fmt.Printf("closest dist:    %6d\n", min_intersection)
 	fmt.Printf("short from src:  %6d\n", shortest_sum)
-	/*
-		Output
-		---
-		wire 1 segments:    301
-			length:   147712
-			points:   147557
-		wire 2 segments:    301
-			length:   153436
-			points:   153295
-		intersections:       43
-		closest dist:       403
-		short from src:    4158
-	*/
 }
