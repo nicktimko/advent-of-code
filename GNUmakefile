@@ -35,10 +35,11 @@ clean:
 > rm -rf outputs/
 
 outputs: aoc2019
-> make outputs/4.txt & \
-  make outputs/3.txt & \
-  make outputs/2.txt & \
-  make outputs/1.txt
+# > make outputs/5.txt &
+> make outputs/4.txt &
+> make outputs/3.txt &
+> make outputs/2.txt &
+> make outputs/1.txt
 
 test: ${go_sources}
 > go test ./...

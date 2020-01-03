@@ -9,6 +9,7 @@ import (
 	"github.com/nicktimko/aoc-2019-golang/day02"
 	"github.com/nicktimko/aoc-2019-golang/day03"
 	"github.com/nicktimko/aoc-2019-golang/day04"
+	"github.com/nicktimko/aoc-2019-golang/day05"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 		2: day02.Solve,
 		3: day03.Solve,
 		4: day04.Solve,
+		5: day05.Solve,
 	}
 	solver, ok := solutions[*ip]
 	if !ok {
