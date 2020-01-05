@@ -18,7 +18,9 @@ func Solve() {
 		log.Fatal(err)
 	}
 
-	// intcode.Processor(tape)
+	inputs := []int{1}
 
-	fmt.Println("Part 1:", tape[0])
+	outputs := intcode.IOProcessor(tape, inputs)
+
+	fmt.Println("Part 1:", outputs[len(outputs)-1])
 }

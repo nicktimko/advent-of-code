@@ -1,6 +1,8 @@
 package intcode
 
-import "log"
+import (
+	"fmt"
+)
 
 // ParameterMode ...
 type ParameterMode int
@@ -10,10 +12,31 @@ const (
 	modeImmediate ParameterMode = 1
 )
 
+// Status indicates the status of the intcode processor.
+type Status int
+
+const (
+	// Running means the machine has not halted
+	Running Status = iota
+	// Halted means the machine ended the program normally with a HALT instruction
+	Halted
+	// Crashed means the machine encountered an error, and has halted abnormally
+	Crashed
+)
+
 // OpCode ...
 type OpCode struct {
 	op int
 	pm [3]ParameterMode
+}
+
+type intcodeComputerState struct {
+	ptr         int
+	tape        []int
+	inputs      []int
+	outputs     []int
+	status      Status
+	faultReason string
 }
 
 func decodeOp(opcode int) OpCode {
@@ -30,66 +53,76 @@ func decodeOp(opcode int) OpCode {
 	return oc
 }
 
-func getParam(tape []int, ptr *int, n int, modes [3]ParameterMode) (int, bool) {
+func getParam(c *intcodeComputerState, n int, modes [3]ParameterMode) (int, bool) {
 	switch modes[n] {
 	case modeImmediate:
-		return tape[*ptr+n+1], false
+		return c.tape[c.ptr+n+1], false
 	case modeIndirect:
-		return tape[tape[*ptr+n+1]], false
+		return c.tape[c.tape[c.ptr+n+1]], false
 	}
+	c.faultReason = fmt.Sprintf("error in parameter %d at instruction %d", n, c.ptr)
+	c.status = Crashed
 	return 0, true
 }
 
-func opAdd(tape []int, ptr *int, pm [3]ParameterMode) bool {
+// func opAdd(tape []int, ptr *int, pm [3]ParameterMode) bool {
+func opAdd(c *intcodeComputerState, pm [3]ParameterMode) {
 	var p [2]int
-	var err bool
+	var crashed bool
 	for i := range p {
-		p[i], err = getParam(tape, ptr, i, pm)
-		if err {
-			log.Fatalf("error in parameter %d at instruction %d", 0, *ptr)
+		p[i], crashed = getParam(c, i, pm)
+		if crashed {
+			return
 		}
 	}
 	sum := p[0] + p[1]
-	targetIndex := tape[*ptr+3]
-	tape[targetIndex] = sum
+	targetIndex := c.tape[c.ptr+3]
+	c.tape[targetIndex] = sum
 	// fmt.Println("ADD wrote", sum, "to index", targetIndex)
 
-	*ptr += 4
-	return false
+	c.ptr += 4
 }
 
-func opMul(tape []int, ptr *int, pm [3]ParameterMode) bool {
+func opMul(c *intcodeComputerState, pm [3]ParameterMode) {
 	var p [2]int
-	var err bool
+	var crashed bool
 	for i := range p {
-		p[i], err = getParam(tape, ptr, i, pm)
-		if err {
-			log.Fatalf("error in parameter %d at instruction %d", 0, *ptr)
+		p[i], crashed = getParam(c, i, pm)
+		if crashed {
+			return
 		}
 	}
 	product := p[0] * p[1]
-	targetIndex := tape[*ptr+3]
-	tape[targetIndex] = product
+	targetIndex := c.tape[c.ptr+3]
+	c.tape[targetIndex] = product
 	// fmt.Println("MUL wrote", product, "to index", targetIndex)
 
-	*ptr += 4
-	return false
+	c.ptr += 4
 }
 
-func opInput(tape []int, ptr *int, pm [3]ParameterMode) bool {
-	return false
+func opInput(c *intcodeComputerState, pm [3]ParameterMode) {
+	var input int
+	input, c.inputs = c.inputs[0], c.inputs[1:]
+	c.tape[c.tape[c.ptr+1]] = input
+	c.ptr += 2
 }
 
-func opOutput(tape []int, ptr *int, pm [3]ParameterMode) bool {
-	return false
+func opOutput(c *intcodeComputerState, pm [3]ParameterMode) {
+	output, crashed := getParam(c, 0, pm)
+	if crashed {
+		return
+	}
+
+	c.outputs = append(c.outputs, output)
+	c.ptr += 2
 }
 
-func opHalt(tape []int, ptr *int, pm [3]ParameterMode) bool {
-	*ptr++
-	return true
+func opHalt(c *intcodeComputerState, pm [3]ParameterMode) {
+	c.ptr++
+	c.status = Halted
 }
 
-var icOps = map[int](func([]int, *int, [3]ParameterMode) bool){
+var icOps = map[int](func(*intcodeComputerState, [3]ParameterMode)){
 	1:  opAdd,
 	2:  opMul,
 	3:  opInput,
@@ -98,17 +131,28 @@ var icOps = map[int](func([]int, *int, [3]ParameterMode) bool){
 }
 
 // ProcessInstruction (single) for Intcode tapes
-func ProcessInstruction(tape []int, ptr *int) bool {
-	op := decodeOp(tape[*ptr])
-	halt := icOps[op.op](tape, ptr, op.pm)
-	return halt
+func ProcessInstruction(c *intcodeComputerState) {
+	op := decodeOp(c.tape[c.ptr])
+	icOps[op.op](c, op.pm)
 }
 
-// Processor for Intcode tapes
+// Processor for simple Intcode tapes with no I/O
 func Processor(tape []int) {
-	ptr := 0
-	halt := false
-	for !halt {
-		halt = ProcessInstruction(tape, &ptr)
+	IOProcessor(tape, []int{})
+}
+
+// IOProcessor supports Intcode tapes with input/output
+func IOProcessor(tape []int, inputs []int) []int {
+	var c intcodeComputerState
+
+	c.tape = tape
+	c.ptr = 0
+	c.status = Running
+	c.inputs = inputs
+
+	for c.status == Running {
+		ProcessInstruction(&c)
 	}
+
+	return c.outputs
 }

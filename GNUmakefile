@@ -35,7 +35,7 @@ clean:
 > rm -rf outputs/
 
 outputs: aoc2019
-# > make outputs/5.txt &
+> make outputs/5.txt &
 > make outputs/4.txt &
 > make outputs/3.txt &
 > make outputs/2.txt &
@@ -43,3 +43,8 @@ outputs: aoc2019
 
 test: ${go_sources}
 > go test ./...
+
+print%: aoc2019
+> target=$@
+> daynum=$${target:5}
+> ./$< -day=$${daynum}
