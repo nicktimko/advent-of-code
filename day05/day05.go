@@ -19,8 +19,14 @@ func Solve() {
 	}
 
 	inputs := []int{1}
-
-	outputs := intcode.IOProcessor(tape, inputs)
+	tape1 := append([]int(nil), tape...)
+	outputs := intcode.IOProcessor(tape1, inputs)
 
 	fmt.Println("Part 1:", outputs[len(outputs)-1])
+
+	p2Inputs := []int{5}
+	tape2 := append([]int(nil), tape...)
+	p2Outputs := intcode.IOProcessor(tape2, p2Inputs)
+
+	fmt.Println("Part 2:", p2Outputs[0])
 }

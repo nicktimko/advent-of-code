@@ -9,6 +9,9 @@ func expectTapeIndexEq(t *testing.T, s *intcodeComputerState, index int, want in
 	if s.tape[index] != want {
 		t.Errorf("Unexpected result in slot (was %d, wanted %d)", s.tape[index], want)
 	}
+}
+
+func expectRunning(t *testing.T, s *intcodeComputerState) {
 	if s.status != Running {
 		t.Error("Halted unexpectedly")
 	}
@@ -21,6 +24,7 @@ func TestAddIndirect(t *testing.T) {
 	ProcessInstruction(&s)
 
 	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
 }
 
 func TestAddImmediate(t *testing.T) {
@@ -30,6 +34,7 @@ func TestAddImmediate(t *testing.T) {
 	ProcessInstruction(&s)
 
 	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
 }
 
 func TestAddMixed(t *testing.T) {
@@ -39,6 +44,7 @@ func TestAddMixed(t *testing.T) {
 	ProcessInstruction(&s)
 
 	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
 }
 
 func TestMulIndirect(t *testing.T) {
@@ -48,6 +54,7 @@ func TestMulIndirect(t *testing.T) {
 	ProcessInstruction(&s)
 
 	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
 }
 
 func TestMulImmediate(t *testing.T) {
@@ -57,6 +64,7 @@ func TestMulImmediate(t *testing.T) {
 	ProcessInstruction(&s)
 
 	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
 }
 
 func TestInput(t *testing.T) {
@@ -66,6 +74,7 @@ func TestInput(t *testing.T) {
 	ProcessInstruction(&s)
 
 	expectTapeIndexEq(t, &s, 2, want)
+	expectRunning(t, &s)
 }
 
 func TestOutput(t *testing.T) {
@@ -77,4 +86,93 @@ func TestOutput(t *testing.T) {
 	if s.outputs[0] != want {
 		t.Errorf("bad output, wanted %d but got %d", want, s.outputs[0])
 	}
+	expectRunning(t, &s)
+}
+
+func TestLTTrue(t *testing.T) {
+	s := intcodeComputerState{tape: []int{1107, 1, 2, 4, -1}}
+	want := 1
+
+	ProcessInstruction(&s)
+
+	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
+}
+
+func TestLTFalse(t *testing.T) {
+	s := intcodeComputerState{tape: []int{1107, 2, 2, 4, -1}}
+	want := 0
+
+	ProcessInstruction(&s)
+
+	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
+}
+
+func TestEQTrue(t *testing.T) {
+	s := intcodeComputerState{tape: []int{1108, 2, 2, 4, -1}}
+	want := 1
+
+	ProcessInstruction(&s)
+
+	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
+}
+
+func TestEQFalse(t *testing.T) {
+	s := intcodeComputerState{tape: []int{1108, 1, 2, 4, -1}}
+	want := 0
+
+	ProcessInstruction(&s)
+
+	expectTapeIndexEq(t, &s, 4, want)
+	expectRunning(t, &s)
+}
+
+func TestJumpIfTrueJumping(t *testing.T) {
+	wantPtr := 100
+	s := intcodeComputerState{tape: []int{105, 1, 3, wantPtr}}
+
+	ProcessInstruction(&s)
+
+	if s.ptr != 100 {
+		t.Errorf("Unexpected pointer (was %d, wanted %d)", s.ptr, wantPtr)
+	}
+	expectRunning(t, &s)
+}
+
+func TestJumpIfTrueNoJumping(t *testing.T) {
+	wantPtr := 3
+	s := intcodeComputerState{tape: []int{105, 0, 3, 9999}}
+
+	ProcessInstruction(&s)
+
+	if s.ptr != wantPtr {
+		t.Errorf("Unexpected pointer (was %d, wanted %d)", s.ptr, wantPtr)
+	}
+	expectRunning(t, &s)
+}
+
+func TestJumpIfFalseJumping(t *testing.T) {
+	wantPtr := 100
+	s := intcodeComputerState{tape: []int{106, 0, 3, wantPtr}}
+
+	ProcessInstruction(&s)
+
+	if s.ptr != 100 {
+		t.Errorf("Unexpected pointer (was %d, wanted %d)", s.ptr, wantPtr)
+	}
+	expectRunning(t, &s)
+}
+
+func TestJumpIfFalseNoJumping(t *testing.T) {
+	wantPtr := 3
+	s := intcodeComputerState{tape: []int{106, 1, 3, 9999}}
+
+	ProcessInstruction(&s)
+
+	if s.ptr != wantPtr {
+		t.Errorf("Unexpected pointer (was %d, wanted %d)", s.ptr, wantPtr)
+	}
+	expectRunning(t, &s)
 }
