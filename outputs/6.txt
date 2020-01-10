@@ -1,3 +1,5 @@
 Day 6 Output
 ==============
 Part 1, total nested orbits: 122782
+Part 2, first common body  : 72D
+            num transfers  : 271
