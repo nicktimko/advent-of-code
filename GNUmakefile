@@ -1,4 +1,4 @@
-#### 'Opinonated approach to make files'
+#### 'Opinonated approach to make files' https://tech.davis-hansson.com/p/make/
 SHELL := bash
 .ONESHELL:
 .SHELLFLAGS := -o errexit -o nounset -o pipefail -c
@@ -35,6 +35,7 @@ clean:
 > rm -rf outputs/
 
 outputs: aoc2019
+> make outputs/6.txt &
 > make outputs/5.txt &
 > make outputs/4.txt &
 > make outputs/3.txt &

@@ -1,0 +1,3 @@
+Day 6 Output
+==============
+Part 1, total nested orbits: 122782
