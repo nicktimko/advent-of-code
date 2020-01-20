@@ -1,10 +1,10 @@
 package intcode
 
-func opAdd(c *intcodeComputerState, pm [3]ParameterMode) {
+func opAdd(c *State, pm [3]ParameterMode) {
 	var p [2]int
 	var crashed bool
 	for i := range p {
-		p[i], crashed = getParam(c, i, pm)
+		p[i], crashed = c.getParam(i, pm)
 		if crashed {
 			return
 		}
@@ -17,11 +17,11 @@ func opAdd(c *intcodeComputerState, pm [3]ParameterMode) {
 	c.ptr += 4
 }
 
-func opMul(c *intcodeComputerState, pm [3]ParameterMode) {
+func opMul(c *State, pm [3]ParameterMode) {
 	var p [2]int
 	var crashed bool
 	for i := range p {
-		p[i], crashed = getParam(c, i, pm)
+		p[i], crashed = c.getParam(i, pm)
 		if crashed {
 			return
 		}
@@ -34,15 +34,15 @@ func opMul(c *intcodeComputerState, pm [3]ParameterMode) {
 	c.ptr += 4
 }
 
-func opInput(c *intcodeComputerState, pm [3]ParameterMode) {
+func opInput(c *State, pm [3]ParameterMode) {
 	var input int
 	input, c.inputs = c.inputs[0], c.inputs[1:]
 	c.tape[c.tape[c.ptr+1]] = input
 	c.ptr += 2
 }
 
-func opOutput(c *intcodeComputerState, pm [3]ParameterMode) {
-	output, crashed := getParam(c, 0, pm)
+func opOutput(c *State, pm [3]ParameterMode) {
+	output, crashed := c.getParam(0, pm)
 	if crashed {
 		return
 	}
@@ -51,11 +51,11 @@ func opOutput(c *intcodeComputerState, pm [3]ParameterMode) {
 	c.ptr += 2
 }
 
-func subopJump(c *intcodeComputerState, pm [3]ParameterMode) (int, int, bool) {
+func subopJump(c *State, pm [3]ParameterMode) (int, int, bool) {
 	var p [2]int
 	var crashed bool
 	for i := range p {
-		p[i], crashed = getParam(c, i, pm)
+		p[i], crashed = c.getParam(i, pm)
 		if crashed {
 			return 0, 0, true
 		}
@@ -63,7 +63,7 @@ func subopJump(c *intcodeComputerState, pm [3]ParameterMode) (int, int, bool) {
 	return p[0], p[1], false
 }
 
-func opJumpIfTrue(c *intcodeComputerState, pm [3]ParameterMode) {
+func opJumpIfTrue(c *State, pm [3]ParameterMode) {
 	predicate, jumpptr, crashed := subopJump(c, pm)
 	if crashed {
 		return
@@ -75,7 +75,7 @@ func opJumpIfTrue(c *intcodeComputerState, pm [3]ParameterMode) {
 	}
 }
 
-func opJumpIfFalse(c *intcodeComputerState, pm [3]ParameterMode) {
+func opJumpIfFalse(c *State, pm [3]ParameterMode) {
 	predicate, jumpptr, crashed := subopJump(c, pm)
 	if crashed {
 		return
@@ -87,11 +87,11 @@ func opJumpIfFalse(c *intcodeComputerState, pm [3]ParameterMode) {
 	}
 }
 
-func opLT(c *intcodeComputerState, pm [3]ParameterMode) {
+func opLT(c *State, pm [3]ParameterMode) {
 	var p [2]int
 	var crashed bool
 	for i := range p {
-		p[i], crashed = getParam(c, i, pm)
+		p[i], crashed = c.getParam(i, pm)
 		if crashed {
 			return
 		}
@@ -105,11 +105,11 @@ func opLT(c *intcodeComputerState, pm [3]ParameterMode) {
 	c.ptr += 4
 }
 
-func opEQ(c *intcodeComputerState, pm [3]ParameterMode) {
+func opEQ(c *State, pm [3]ParameterMode) {
 	var p [2]int
 	var crashed bool
 	for i := range p {
-		p[i], crashed = getParam(c, i, pm)
+		p[i], crashed = c.getParam(i, pm)
 		if crashed {
 			return
 		}
@@ -123,12 +123,12 @@ func opEQ(c *intcodeComputerState, pm [3]ParameterMode) {
 	c.ptr += 4
 }
 
-func opHalt(c *intcodeComputerState, pm [3]ParameterMode) {
+func opHalt(c *State, pm [3]ParameterMode) {
 	c.ptr++
 	c.status = Halted
 }
 
-var icOps = map[int](func(*intcodeComputerState, [3]ParameterMode)){
+var icOps = map[int](func(*State, [3]ParameterMode)){
 	1:  opAdd,
 	2:  opMul,
 	3:  opInput,

@@ -30,7 +30,8 @@ type OpCode struct {
 	pm [3]ParameterMode
 }
 
-type intcodeComputerState struct {
+// State is the set of values that compose an IntCode computer's internal state.
+type State struct {
 	ptr         int
 	tape        []int
 	inputs      []int
@@ -53,7 +54,7 @@ func decodeOp(opcode int) OpCode {
 	return oc
 }
 
-func getParam(c *intcodeComputerState, n int, modes [3]ParameterMode) (int, bool) {
+func (c *State) getParam(n int, modes [3]ParameterMode) (int, bool) {
 	switch modes[n] {
 	case modeImmediate:
 		return c.tape[c.ptr+n+1], false
@@ -66,7 +67,7 @@ func getParam(c *intcodeComputerState, n int, modes [3]ParameterMode) (int, bool
 }
 
 // ProcessInstruction (single) for Intcode tapes
-func ProcessInstruction(c *intcodeComputerState) {
+func (c *State) ProcessInstruction() {
 	op := decodeOp(c.tape[c.ptr])
 	icOps[op.op](c, op.pm)
 }
@@ -78,7 +79,7 @@ func Processor(tape []int) {
 
 // IOProcessor supports Intcode tapes with input/output
 func IOProcessor(tape []int, inputs []int) []int {
-	var c intcodeComputerState
+	var c State
 
 	c.tape = tape
 	c.ptr = 0
@@ -86,8 +87,13 @@ func IOProcessor(tape []int, inputs []int) []int {
 	c.inputs = inputs
 
 	for c.status == Running {
-		ProcessInstruction(&c)
+		c.ProcessInstruction()
 	}
 
 	return c.outputs
+}
+
+// Running checks if the computer is running and has not halted or crashed
+func (c *State) Running() bool {
+	return c.status == Running
 }

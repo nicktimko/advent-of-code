@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/nicktimko/aoc-2019-golang/aocio"
+	"github.com/nicktimko/aoc-2019-golang/toyshop"
 )
 
 func TestStringLines(t *testing.T) {
@@ -13,7 +14,7 @@ func TestStringLines(t *testing.T) {
 	}
 	want := []string{"a", "b", "c"}
 
-	if !aocio.EqStringSlice(sl, want) {
+	if !toyshop.EqStringSlice(sl, want) {
 		t.Errorf("slices differ: %#v %#v", want, sl)
 	}
 }
@@ -29,7 +30,7 @@ func TestIntLines(t *testing.T) {
 		1234567890987654321, // ~60 bits
 	}
 
-	if !aocio.EqIntSlice(il, want) {
+	if !toyshop.EqInt64Slice(il, want) {
 		t.Errorf("slices differ: %#v %#v", want, il)
 	}
 }

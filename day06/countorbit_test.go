@@ -3,8 +3,8 @@ package day06_test
 import (
 	"testing"
 
-	"github.com/nicktimko/aoc-2019-golang/aocio"
 	"github.com/nicktimko/aoc-2019-golang/day06"
+	"github.com/nicktimko/aoc-2019-golang/toyshop"
 )
 
 type countOrbitTrial struct {
@@ -65,7 +65,7 @@ func TestGetParents(t *testing.T) {
 	}
 	for n, trial := range trials {
 		result := day06.AllParents(trial.inputGraph, trial.inputOrigin)
-		if !aocio.EqStringSlice(result, trial.expected) {
+		if !toyshop.EqStringSlice(result, trial.expected) {
 			t.Errorf("allParents(trials[%d]) -> %v != %v", n, result, trial.expected)
 		}
 	}

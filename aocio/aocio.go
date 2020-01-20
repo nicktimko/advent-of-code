@@ -6,32 +6,6 @@ import (
 	"strconv"
 )
 
-// EqStringSlice returns true if the slices of strings are identical
-func EqStringSlice(a []string, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-// EqIntSlice returns true if the slices of int64s are identical
-func EqIntSlice(a []int64, b []int64) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
 // StringLines loads a file at fn and slices it up by line
 func StringLines(fn string) ([]string, error) {
 	file, err := os.Open(fn)
