@@ -128,14 +128,25 @@ func opHalt(c *State, pm [3]ParameterMode) {
 	c.status = Halted
 }
 
+// opcodes
+const opcAdd = 1
+const opcMul = 2
+const opcInput = 3
+const opcOutput = 4
+const opcJumpIfTrue = 5
+const opcJumpIfFalse = 6
+const opcLT = 7
+const opcEQ = 8
+const opcHalt = 99
+
 var icOps = map[int](func(*State, [3]ParameterMode)){
-	1:  opAdd,
-	2:  opMul,
-	3:  opInput,
-	4:  opOutput,
-	5:  opJumpIfTrue,
-	6:  opJumpIfFalse,
-	7:  opLT,
-	8:  opEQ,
-	99: opHalt,
+	opcAdd:         opAdd,
+	opcMul:         opMul,
+	opcInput:       opInput,
+	opcOutput:      opOutput,
+	opcJumpIfTrue:  opJumpIfTrue,
+	opcJumpIfFalse: opJumpIfFalse,
+	opcLT:          opLT,
+	opcEQ:          opEQ,
+	opcHalt:        opHalt,
 }

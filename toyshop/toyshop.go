@@ -105,3 +105,12 @@ func PermutationsInt(c chan []int, iterable []int, r int) {
 		}
 	}
 }
+
+func TeeInt(input chan int, output1 chan int, output2 chan int) {
+	for x := range input {
+		output1 <- x
+		output2 <- x
+	}
+	close(output1)
+	close(output2)
+}

@@ -93,6 +93,37 @@ func IOProcessor(tape []int, inputs []int) []int {
 	return c.outputs
 }
 
+// CommunicatingProcessor uses input and output channels for I/O.
+func CommunicatingProcessor(tape []int, input chan int, output chan int) {
+	var c State
+
+	c.tape = tape
+	c.ptr = 0
+	c.status = Running
+
+	for c.status == Running {
+		op := decodeOp(c.tape[c.ptr])
+
+		if op.op == opcInput {
+			v, ok := <-input
+			if !ok {
+				break
+			}
+			c.inputs = []int{v}
+			// fmt.Printf("got input %d\n", c.inputs[0])
+		}
+
+		icOps[op.op](&c, op.pm)
+
+		if op.op == opcOutput {
+			// fmt.Printf("sent output %d\n", c.outputs[0])
+			output <- c.outputs[0]
+			c.outputs = nil
+		}
+	}
+	close(output)
+}
+
 // Running checks if the computer is running and has not halted or crashed
 func (c *State) Running() bool {
 	return c.status == Running
