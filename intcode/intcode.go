@@ -105,11 +105,7 @@ func CommunicatingProcessor(tape []int, input chan int, output chan int) {
 		op := decodeOp(c.tape[c.ptr])
 
 		if op.op == opcInput {
-			v, ok := <-input
-			if !ok {
-				break
-			}
-			c.inputs = []int{v}
+			c.inputs = []int{<-input}
 			// fmt.Printf("got input %d\n", c.inputs[0])
 		}
 
