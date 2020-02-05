@@ -1,4 +1,3 @@
-// Here are some example programs that use these features:
 package intcode_test
 
 import (
@@ -17,7 +16,7 @@ func TestLargeOutput(t *testing.T) {
 	output := intcode.IOProcessor(largeOutput, []int{})[0]
 
 	if output != expected {
-		t.Errorf("output differs: %#v %#v", output, expected)
+		t.Errorf("output differs (sorry 32-bit...): %#v %#v", output, expected)
 	}
 	/*
 		NOTE: thankfully this works because we're on a 64-bit system, and int means
@@ -39,18 +38,3 @@ func TestLargeOutput2(t *testing.T) {
 		t.Errorf("output differs: %#v %#v", output, expected)
 	}
 }
-
-// func TestQuine(t *testing.T) {
-// 	quine := []int{
-// 		// takes no input and produces a copy of itself as output.
-// 		109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99,
-// 	}
-
-// 	inputQuine := append([]int(nil), quine...)
-
-// 	output := intcode.IOProcessor(inputQuine, []int{})
-
-// 	if !toyshop.EqIntSlice(quine, output) {
-// 		t.Errorf("slices differ: %#v %#v", quine, output)
-// 	}
-// }

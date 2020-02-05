@@ -68,8 +68,20 @@ func (c *State) getParam(n int, modes [3]ParameterMode) (int, bool) {
 
 // ProcessInstruction (single) for Intcode tapes
 func (c *State) ProcessInstruction() {
+	if c.ptr >= len(c.tape) {
+		c.status = Crashed
+		c.faultReason = fmt.Sprintf("pointer left tape (address %d)", c.ptr)
+		return
+	}
 	op := decodeOp(c.tape[c.ptr])
-	icOps[op.op](c, op.pm)
+
+	opHandler, ok := icOps[op.op]
+	if !ok {
+		c.status = Crashed
+		c.faultReason = fmt.Sprintf("unknown op %d at address %d", op.op, c.ptr)
+		return
+	}
+	opHandler(c, op.pm)
 }
 
 // Processor for simple Intcode tapes with no I/O
@@ -91,6 +103,18 @@ func IOProcessor(tape []int, inputs []int) []int {
 	}
 
 	return c.outputs
+}
+
+// New Intcode processor
+func New(tape []int, inputs []int) State {
+	var c State
+
+	c.tape = tape
+	c.ptr = 0
+	c.status = Running
+	c.inputs = inputs
+
+	return c
 }
 
 // CommunicatingProcessor uses input and output channels for I/O.
@@ -123,4 +147,14 @@ func CommunicatingProcessor(tape []int, input chan int, output chan int) {
 // Running checks if the computer is running and has not halted or crashed
 func (c *State) Running() bool {
 	return c.status == Running
+}
+
+// Crashed checks if the computer halted in an abnormal manner and why
+func (c *State) Crashed() (bool, string) {
+	return (c.status == Crashed), c.faultReason
+}
+
+// Output gets the processor's output stream
+func (c *State) Output() []int {
+	return c.outputs
 }
