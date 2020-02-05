@@ -10,6 +10,7 @@ type ParameterMode int
 const (
 	modeIndirect  ParameterMode = 0
 	modeImmediate ParameterMode = 1
+	modeRelative  ParameterMode = 2
 )
 
 // Status indicates the status of the intcode processor.
@@ -32,12 +33,13 @@ type OpCode struct {
 
 // State is the set of values that compose an IntCode computer's internal state.
 type State struct {
-	ptr         int
-	tape        []int
-	inputs      []int
-	outputs     []int
-	status      Status
-	faultReason string
+	ptr          int
+	relativeBase int
+	tape         []int
+	inputs       []int
+	outputs      []int
+	status       Status
+	faultReason  string
 }
 
 func decodeOp(opcode int) OpCode {
@@ -55,15 +57,53 @@ func decodeOp(opcode int) OpCode {
 }
 
 func (c *State) getParam(n int, modes [3]ParameterMode) (int, bool) {
+	var index int
 	switch modes[n] {
 	case modeImmediate:
-		return c.tape[c.ptr+n+1], false
+		index = c.ptr + n + 1
 	case modeIndirect:
-		return c.tape[c.tape[c.ptr+n+1]], false
+		index = c.tape[c.ptr+n+1]
+	case modeRelative:
+		index = c.tape[c.ptr+n+1] + c.relativeBase
+	default:
+		c.faultReason = fmt.Sprintf(
+			"unknown addressing mode %d in parameter %d at instruction %d",
+			modes[n], n, c.ptr,
+		)
+		c.status = Crashed
+		return 0, true
 	}
-	c.faultReason = fmt.Sprintf("error in parameter %d at instruction %d", n, c.ptr)
-	c.status = Crashed
-	return 0, true
+	if index < 0 {
+		c.faultReason = fmt.Sprintf("accessing negative address due to instruction %d", c.ptr)
+		c.status = Crashed
+		return 0, true
+	}
+	if index > 1024*1024 {
+		c.faultReason = fmt.Sprintf("accessing address beyond memory limit: %d", index)
+		c.status = Crashed
+		return 0, true
+	}
+	if index >= len(c.tape) {
+		// grow tape (on read)
+		expansion := index + 1 - len(c.tape)
+		c.tape = append(c.tape, make([]int, expansion)...)
+	}
+	return c.tape[index], false
+}
+
+func (c *State) setTapeIndex(index int, val int) bool {
+	if index > 1024*1024 {
+		c.faultReason = fmt.Sprintf("writing address beyond memory limit: %d", index)
+		c.status = Crashed
+		return true
+	}
+	if index >= len(c.tape) {
+		// grow tape (on write)
+		expansion := index + 1 - len(c.tape)
+		c.tape = append(c.tape, make([]int, expansion)...)
+	}
+	c.tape[index] = val
+	return false
 }
 
 // ProcessInstruction (single) for Intcode tapes
@@ -91,12 +131,7 @@ func Processor(tape []int) {
 
 // IOProcessor supports Intcode tapes with input/output
 func IOProcessor(tape []int, inputs []int) []int {
-	var c State
-
-	c.tape = tape
-	c.ptr = 0
-	c.status = Running
-	c.inputs = inputs
+	c := New(tape, inputs)
 
 	for c.status == Running {
 		c.ProcessInstruction()
@@ -111,6 +146,7 @@ func New(tape []int, inputs []int) State {
 
 	c.tape = tape
 	c.ptr = 0
+	c.relativeBase = 0
 	c.status = Running
 	c.inputs = inputs
 

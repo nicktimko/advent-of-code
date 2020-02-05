@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/nicktimko/aoc-2019-golang/intcode"
+	"github.com/nicktimko/aoc-2019-golang/toyshop"
 )
 
 func TestQuine(t *testing.T) {
@@ -21,12 +22,13 @@ func TestQuine(t *testing.T) {
 		proc.ProcessInstruction()
 	}
 
-	// if proc.Crashed() {
-	// 	t.Errorf("unexpected processor halt!")
-	// }
+	crashed, reason := proc.Crashed()
+	if crashed {
+		t.Errorf("unexpected processor halt because: %s", reason)
+	}
 
-	// output := proc.Output()
-	// if !toyshop.EqIntSlice(quine, output) {
-	// 	t.Errorf("slices differ: %#v %#v", quine, output)
-	// }
+	output := proc.Output()
+	if !toyshop.EqIntSlice(quine, output) {
+		t.Errorf("slices differ: %#v %#v", quine, output)
+	}
 }

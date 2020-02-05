@@ -55,7 +55,41 @@ func TestCrashNiceBadAddressing(t *testing.T) {
 	if !crashed {
 		t.Error("processor didn't crash")
 	}
-	if !strings.HasPrefix(reason, "error in parameter") {
+	if !strings.HasPrefix(reason, "unknown addressing mode") {
+		t.Errorf("processor crashed in an unexpected way: '%s'", reason)
+	}
+}
+
+func TestCrashNiceNegativeAddress(t *testing.T) {
+	negativeAddressingTape := []int{1, -1, 0, 3, 99}
+
+	proc := intcode.New(negativeAddressingTape, []int{})
+
+	for proc.Running() {
+		proc.ProcessInstruction()
+	}
+	crashed, reason := proc.Crashed()
+	if !crashed {
+		t.Error("processor didn't crash")
+	}
+	if !strings.HasPrefix(reason, "accessing negative address") {
+		t.Errorf("processor crashed in an unexpected way: '%s'", reason)
+	}
+}
+
+func TestCrashNiceBigMem(t *testing.T) {
+	bigmemAddressingTape := []int{1, 1024*1024 + 1, 0, 3, 99}
+
+	proc := intcode.New(bigmemAddressingTape, []int{})
+
+	for proc.Running() {
+		proc.ProcessInstruction()
+	}
+	crashed, reason := proc.Crashed()
+	if !crashed {
+		t.Error("processor didn't crash")
+	}
+	if !strings.HasPrefix(reason, "accessing address beyond memory limit") {
 		t.Errorf("processor crashed in an unexpected way: '%s'", reason)
 	}
 }

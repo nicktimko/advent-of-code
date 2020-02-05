@@ -11,8 +11,7 @@ func opAdd(c *State, pm [3]ParameterMode) {
 	}
 	sum := p[0] + p[1]
 	targetIndex := c.tape[c.ptr+3]
-	c.tape[targetIndex] = sum
-	// fmt.Println("ADD wrote", sum, "to index", targetIndex)
+	c.setTapeIndex(targetIndex, sum)
 
 	c.ptr += 4
 }
@@ -28,8 +27,7 @@ func opMul(c *State, pm [3]ParameterMode) {
 	}
 	product := p[0] * p[1]
 	targetIndex := c.tape[c.ptr+3]
-	c.tape[targetIndex] = product
-	// fmt.Println("MUL wrote", product, "to index", targetIndex)
+	c.setTapeIndex(targetIndex, product)
 
 	c.ptr += 4
 }
@@ -37,7 +35,15 @@ func opMul(c *State, pm [3]ParameterMode) {
 func opInput(c *State, pm [3]ParameterMode) {
 	var input int
 	input, c.inputs = c.inputs[0], c.inputs[1:]
-	c.tape[c.tape[c.ptr+1]] = input
+
+	// input parameter is always immediate
+	pm[0] = modeImmediate
+
+	targetIndex, crashed := c.getParam(0, pm)
+	if crashed {
+		return
+	}
+	c.setTapeIndex(targetIndex, input)
 	c.ptr += 2
 }
 
@@ -98,9 +104,9 @@ func opLT(c *State, pm [3]ParameterMode) {
 	}
 	targetIndex := c.tape[c.ptr+3]
 	if p[0] < p[1] {
-		c.tape[targetIndex] = 1
+		c.setTapeIndex(targetIndex, 1)
 	} else {
-		c.tape[targetIndex] = 0
+		c.setTapeIndex(targetIndex, 0)
 	}
 	c.ptr += 4
 }
@@ -116,11 +122,20 @@ func opEQ(c *State, pm [3]ParameterMode) {
 	}
 	targetIndex := c.tape[c.ptr+3]
 	if p[0] == p[1] {
-		c.tape[targetIndex] = 1
+		c.setTapeIndex(targetIndex, 1)
 	} else {
-		c.tape[targetIndex] = 0
+		c.setTapeIndex(targetIndex, 0)
 	}
 	c.ptr += 4
+}
+
+func opBaseAdjust(c *State, pm [3]ParameterMode) {
+	adjustment, crashed := c.getParam(0, pm)
+	if crashed {
+		return
+	}
+	c.relativeBase += adjustment
+	c.ptr += 2
 }
 
 func opHalt(c *State, pm [3]ParameterMode) {
@@ -137,6 +152,7 @@ const opcJumpIfTrue = 5
 const opcJumpIfFalse = 6
 const opcLT = 7
 const opcEQ = 8
+const opcBaseAdjust = 9
 const opcHalt = 99
 
 var icOps = map[int](func(*State, [3]ParameterMode)){
@@ -148,5 +164,6 @@ var icOps = map[int](func(*State, [3]ParameterMode)){
 	opcJumpIfFalse: opJumpIfFalse,
 	opcLT:          opLT,
 	opcEQ:          opEQ,
+	opcBaseAdjust:  opBaseAdjust,
 	opcHalt:        opHalt,
 }
