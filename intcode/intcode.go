@@ -11,6 +11,7 @@ const (
 	modeIndirect  ParameterMode = 0
 	modeImmediate ParameterMode = 1
 	modeRelative  ParameterMode = 2
+	// modeImmediateRelative ParameterMode = -1
 )
 
 // Status indicates the status of the intcode processor.
@@ -57,6 +58,15 @@ func decodeOp(opcode int) OpCode {
 }
 
 func (c *State) getParam(n int, modes [3]ParameterMode) (int, bool) {
+	index, crashed := c.getParamIndex(n, modes)
+	if crashed {
+		return index, true
+	}
+	return c.tape[index], false
+}
+
+func (c *State) getParamIndex(n int, modes [3]ParameterMode) (int, bool) {
+
 	var index int
 	switch modes[n] {
 	case modeImmediate:
@@ -74,12 +84,16 @@ func (c *State) getParam(n int, modes [3]ParameterMode) (int, bool) {
 		return 0, true
 	}
 	if index < 0 {
-		c.faultReason = fmt.Sprintf("accessing negative address due to instruction %d", c.ptr)
+		c.faultReason = fmt.Sprintf(
+			"accessing negative address due to instruction %d", c.ptr,
+		)
 		c.status = Crashed
 		return 0, true
 	}
 	if index > 1024*1024 {
-		c.faultReason = fmt.Sprintf("accessing address beyond memory limit: %d", index)
+		c.faultReason = fmt.Sprintf(
+			"accessing address beyond memory limit: %d", index,
+		)
 		c.status = Crashed
 		return 0, true
 	}
@@ -88,12 +102,14 @@ func (c *State) getParam(n int, modes [3]ParameterMode) (int, bool) {
 		expansion := index + 1 - len(c.tape)
 		c.tape = append(c.tape, make([]int, expansion)...)
 	}
-	return c.tape[index], false
+	return index, false
 }
 
 func (c *State) setTapeIndex(index int, val int) bool {
-	if index > 1024*1024 {
-		c.faultReason = fmt.Sprintf("writing address beyond memory limit: %d", index)
+	if index > 1024*1024 || index < 0 {
+		c.faultReason = fmt.Sprintf(
+			"writing address beyond memory limit: %d", index,
+		)
 		c.status = Crashed
 		return true
 	}
@@ -108,6 +124,7 @@ func (c *State) setTapeIndex(index int, val int) bool {
 
 // ProcessInstruction (single) for Intcode tapes
 func (c *State) ProcessInstruction() {
+	// fmt.Printf("ptr: % 5d, inst: % 6d\n", c.ptr, c.tape[c.ptr])
 	if c.ptr >= len(c.tape) {
 		c.status = Crashed
 		c.faultReason = fmt.Sprintf("pointer left tape (address %d)", c.ptr)
@@ -135,6 +152,11 @@ func IOProcessor(tape []int, inputs []int) []int {
 
 	for c.status == Running {
 		c.ProcessInstruction()
+	}
+
+	crashed, reason := c.Crashed()
+	if crashed {
+		fmt.Println(reason)
 	}
 
 	return c.outputs
@@ -178,6 +200,11 @@ func CommunicatingProcessor(tape []int, input chan int, output chan int) {
 		}
 	}
 	close(output)
+
+	crashed, reason := c.Crashed()
+	if crashed {
+		fmt.Println(reason)
+	}
 }
 
 // Running checks if the computer is running and has not halted or crashed

@@ -77,6 +77,25 @@ func TestInput(t *testing.T) {
 	expectRunning(t, &s)
 }
 
+func TestInputRelbase(t *testing.T) {
+	want := 123456
+	s := State{
+		tape:         []int{0, 203, 2 - 44, 0},
+		inputs:       []int{want},
+		relativeBase: 44,
+		ptr:          1,
+	}
+
+	s.ProcessInstruction()
+
+	if s.faultReason != "" {
+		t.Errorf("crashed processor: %s\n", s.faultReason)
+	}
+	expectTapeIndexEq(t, &s, 2, want)
+	expectRunning(t, &s)
+	t.Logf("tape: %#v", s.tape)
+}
+
 func TestOutput(t *testing.T) {
 	want := 6543
 	s := State{tape: []int{4, 2, want}}

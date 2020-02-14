@@ -10,7 +10,11 @@ func opAdd(c *State, pm [3]ParameterMode) {
 		}
 	}
 	sum := p[0] + p[1]
-	targetIndex := c.tape[c.ptr+3]
+
+	targetIndex, crashed := c.getParamIndex(2, pm)
+	if crashed {
+		return
+	}
 	c.setTapeIndex(targetIndex, sum)
 
 	c.ptr += 4
@@ -26,20 +30,20 @@ func opMul(c *State, pm [3]ParameterMode) {
 		}
 	}
 	product := p[0] * p[1]
-	targetIndex := c.tape[c.ptr+3]
+	targetIndex, crashed := c.getParamIndex(2, pm)
+	if crashed {
+		return
+	}
 	c.setTapeIndex(targetIndex, product)
 
 	c.ptr += 4
 }
 
 func opInput(c *State, pm [3]ParameterMode) {
-	var input int
+	var input, targetIndex int
 	input, c.inputs = c.inputs[0], c.inputs[1:]
 
-	// input parameter is always immediate
-	pm[0] = modeImmediate
-
-	targetIndex, crashed := c.getParam(0, pm)
+	targetIndex, crashed := c.getParamIndex(0, pm)
 	if crashed {
 		return
 	}
@@ -102,7 +106,10 @@ func opLT(c *State, pm [3]ParameterMode) {
 			return
 		}
 	}
-	targetIndex := c.tape[c.ptr+3]
+	targetIndex, crashed := c.getParamIndex(2, pm)
+	if crashed {
+		return
+	}
 	if p[0] < p[1] {
 		c.setTapeIndex(targetIndex, 1)
 	} else {
@@ -120,7 +127,10 @@ func opEQ(c *State, pm [3]ParameterMode) {
 			return
 		}
 	}
-	targetIndex := c.tape[c.ptr+3]
+	targetIndex, crashed := c.getParamIndex(2, pm)
+	if crashed {
+		return
+	}
 	if p[0] == p[1] {
 		c.setTapeIndex(targetIndex, 1)
 	} else {
