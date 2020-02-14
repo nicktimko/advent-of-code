@@ -35,6 +35,7 @@ clean:
 > rm -rf outputs/
 
 outputs: aoc2019
+> make outputs/10.txt &
 > make outputs/9.txt &
 > make outputs/8.txt &
 > make outputs/7.txt &
