@@ -30,3 +30,20 @@ def read_ints(day: int) -> Generator[int, None, None]:
     for line in read_lines(day):
         if line:
             yield int(line)
+
+
+def read_paragraphs(day: int, coalesce: bool = True) -> Generator[str, None, None]:
+    """
+    Iteratively return lines separated by blank lines. If *coalesce* is true,
+    the default, join the newlines with a space, otherwise the newline is kept.
+    """
+    joiner = " " if coalesce else "\n"
+    para = []
+    for line in read_lines(day, skip_blanks=False):
+        if para and not line:
+            yield joiner.join(para)
+            para = []
+        if line:
+            para.append(line)
+    if para:
+        yield joiner.join(para)
