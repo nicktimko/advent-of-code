@@ -8,23 +8,26 @@ from ..io import read_paragraphs
 TODAY = 4
 
 REQUIRED_FIELDS = {
-    "byr", # Birth Year
-    "iyr", # Issue Year
-    "eyr", # Expiration Year
-    "hgt", # Height
-    "hcl", # Hair Color
-    "ecl", # Eye Color
-    "pid", # Passport ID
+    "byr",  # Birth Year
+    "iyr",  # Issue Year
+    "eyr",  # Expiration Year
+    "hgt",  # Height
+    "hcl",  # Hair Color
+    "ecl",  # Eye Color
+    "pid",  # Passport ID
 }
 OPTIONAL_FIELDS = {
-    "cid", # Country ID
+    "cid",  # Country ID
 }
 
 VALIDATORS = {}
+
+
 def validator(field):
     def _validator(f):
         global VALIDATORS
         VALIDATORS[field] = f
+
     return _validator
 
 
@@ -69,7 +72,9 @@ def _(value):
 @validator("hcl")
 def _(value):
     try:
-        return value[0] == "#" and all(value[n] in string.hexdigits for n in range(1, 7))
+        return value[0] == "#" and all(
+            value[n] in string.hexdigits for n in range(1, 7)
+        )
     except IndexError:
         # e.g. "", "#abc"
         return False
@@ -96,7 +101,10 @@ def run():
             well_formed += 1
 
             # if all(VALIDATORS[field](value) for field, value in data.items()):
-            if all(VALIDATORS.get(field, lambda x: True)(value) for field, value in data.items()):
+            if all(
+                VALIDATORS.get(field, lambda x: True)(value)
+                for field, value in data.items()
+            ):
                 valid += 1
 
     print("Part 1:", well_formed)

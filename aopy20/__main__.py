@@ -37,9 +37,14 @@ def main():
         return template(args.day)
 
     try:
-        day_module = importlib.import_module(f".day.d{args.day:02d}", package=__package__)
+        day_module = importlib.import_module(
+            f".day.d{args.day:02d}", package=__package__
+        )
     except ImportError:
-        print(f"No module defined for day {args.day}. Initialize with --init", file=sys.stderr)
+        print(
+            f"No module defined for day {args.day}. Initialize with --init",
+            file=sys.stderr,
+        )
         return 1
 
     if args.timeit:

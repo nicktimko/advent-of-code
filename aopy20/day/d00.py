@@ -6,7 +6,7 @@ https://adventofcode.com/2020/day/n
 from ..io import read_lines
 
 
-TODAY = 'N'
+TODAY = "N"
 
 
 def run():

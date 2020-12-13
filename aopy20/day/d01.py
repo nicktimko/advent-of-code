@@ -10,6 +10,7 @@ from ..io import read_ints
 
 L = logging.getLogger(__name__)
 
+
 def run():
     entries = list(read_ints(1))
     entries.sort()
@@ -24,7 +25,7 @@ def run():
             break
         elif sum_ < 2020:
             i_lo += 1
-        else: # >2020
+        else:  # >2020
             i_hi -= 1
 
     lo = entries[i_lo]
@@ -32,7 +33,7 @@ def run():
 
     L.debug(f"{lo} + {hi} = {lo+hi}")
     L.debug(f"{lo} * {hi} = {lo*hi}")
-    print("Part 1:", lo*hi)
+    print("Part 1:", lo * hi)
 
     # optimize search space by ignoring values that can't work, i.e. those
     # with values so high that when added to the _lowest_ two values, are

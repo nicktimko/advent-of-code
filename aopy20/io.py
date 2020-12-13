@@ -5,6 +5,7 @@ REPO_ROOT = pathlib.Path(__file__).parents[1]
 
 INPUT_DIR = REPO_ROOT / "inputs"
 
+
 def input_file(day: int) -> pathlib.Path:
     """
     Get the path of the input file for *day*

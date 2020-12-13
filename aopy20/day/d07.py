@@ -41,9 +41,7 @@ def process_inner_bags(inner_rules: str) -> Generator[N_COLORS, None, None]:
 def n_bags_in(contain_tree: Dict[str, N_COLORS], color: str) -> int:
     """Finally, a good use of recursion"""
     return sum(
-        x.n * (1 + n_bags_in(contain_tree, x.color))
-        for x
-        in contain_tree[color]
+        x.n * (1 + n_bags_in(contain_tree, x.color)) for x in contain_tree[color]
     )
 
 

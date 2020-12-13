@@ -6,7 +6,8 @@ https://adventofcode.com/2020/day/2
 import re
 from ..io import read_lines
 
-PASSWORD_POLICY_PATTERN = re.compile(r"""
+PASSWORD_POLICY_PATTERN = re.compile(
+    r"""
     ^
     (?P<count_min>\d+)-(?P<count_max>\d+)
     [\ ]
@@ -14,7 +15,10 @@ PASSWORD_POLICY_PATTERN = re.compile(r"""
     [\ ]
     (?P<password>\w+)
     $
-""", flags=re.VERBOSE)
+""",
+    flags=re.VERBOSE,
+)
+
 
 def password_policy(entry: str):
     match = PASSWORD_POLICY_PATTERN.fullmatch(entry.strip())
@@ -38,18 +42,10 @@ def officially_valid_password(policy, password: str) -> bool:
 
 def run():
     entries = [password_policy(line) for line in read_lines(2)]
-    valid_passwords = sum(
-        1
-        for p
-        in entries
-        if valid_password(p, p["password"])
-    )
+    valid_passwords = sum(1 for p in entries if valid_password(p, p["password"]))
     print("Part 1:", valid_passwords)
 
     official_passwords = sum(
-        1
-        for p
-        in entries
-        if officially_valid_password(p, p["password"])
+        1 for p in entries if officially_valid_password(p, p["password"])
     )
     print("Part 2:", official_passwords)

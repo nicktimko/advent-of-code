@@ -24,6 +24,7 @@ class TreeFilledSlope:
             y += slope_y
         return hits
 
+
 def run():
     slope = TreeFilledSlope(read_lines(3))
     print("Part 1:", slope.hits(3, 1))
