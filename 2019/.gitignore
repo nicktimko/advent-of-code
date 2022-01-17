@@ -1,0 +1,7 @@
+**/*
+!**/*.go
+!**/*.txt
+!**/*.md
+!**/
+!.gitignore
+!GNUmakefile
