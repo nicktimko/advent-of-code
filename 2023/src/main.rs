@@ -2,16 +2,33 @@ use std::fs::read_to_string;
 
 // use regex::RegexBuilder;
 
-struct WordNums {
-    word: String,
+struct WordNums<'a> {
+    word: &'a str,
     num: u8,
 }
+
+const WNS: [WordNums; 9] = [
+    WordNums{word: "one", num: 1},
+    WordNums{word: "two", num: 2},
+    WordNums{word: "three", num: 3},
+    WordNums{word: "four", num: 4},
+    WordNums{word: "five", num: 5},
+    WordNums{word: "six", num: 6},
+    WordNums{word: "seven", num: 7},
+    WordNums{word: "eight", num: 8},
+    WordNums{word: "nine", num: 9},
+];
 
 fn main() {
     let mut accum = 0u32;
     let mut accum2 = 0u32;
 
     for line in read_lines("inputs/day01.txt") {
+        let mut alt_line = line.clone();
+        for wn in WNS {
+            alt_line = alt_line.replace(wn.word, &*wn.num.to_string());
+        }
+
         // let first_num: u32;
         // let last_num: u32;
         for c in line.chars() {
@@ -37,51 +54,35 @@ fn main() {
                 }
             }
         }
-        // println!("{} -> {}{}", line, first_num, last_num);
-    }
 
-    let wns: [WordNums; 9] = [
-        WordNums{word: "one".to_string(), num: 1},
-        WordNums{word: "two".to_string(), num: 2},
-        WordNums{word: "three".to_string(), num: 3},
-        WordNums{word: "four".to_string(), num: 4},
-        WordNums{word: "five".to_string(), num: 5},
-        WordNums{word: "six".to_string(), num: 6},
-        WordNums{word: "seven".to_string(), num: 7},
-        WordNums{word: "eight".to_string(), num: 8},
-        WordNums{word: "nine".to_string(), num: 9},
-    ];
+        println!("{} -> {}", line, alt_line);
 
-    for line in read_lines("inputs/day01.txt") {
-        for wn in wns {
-        }
-        for c in line.chars() {
+        for c in alt_line.chars() {
             let digit = c.to_digit(10);
             match digit {
                 None => continue,
                 Some(val) => {
                     // first_num = val;
-                    accum += 10*val;
+                    accum2 += 10*val;
                     break
                 }
             }
         }
-
-        for c in line.chars().rev() {
+        for c in alt_line.chars().rev() {
             let digit = c.to_digit(10);
             match digit {
                 None => continue,
                 Some(val) => {
                     // last_num = val;
-                    accum += val;
+                    accum2 += val;
                     break
                 }
             }
         }
-        // println!("{} -> {}{}", line, first_num, last_num);
     }
 
-    // println!("Part 1: {}", accum);
+    println!("Part 1: {}", accum);
+    println!("Part 2: {}", accum2);
     // let pat = r"
     //     (
     //         [0-9]  # single digit
