@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::cmp;
 use std::fs::read_to_string;
 
+use phf::phf_map;
+
 // use regex::RegexBuilder;
 
 struct WordNums<'a> {
@@ -25,6 +27,7 @@ const WNS: [WordNums; 9] = [
 fn main() {
     day1();
     day2();
+    day3();
 }
 
 fn day1() {
@@ -154,6 +157,110 @@ fn parse_day2_game(line: &str) -> Day2Game {
     }
     Day2Game { id: id, draws: draws }
 }
+
+fn day3() {
+
+    let raw_schematic = read_lines("inputs/day03.txt");
+    
+    let (rows, cols) = (raw_schematic.len(), raw_schematic[0].len());
+    
+    let mut schematic = vec![vec![0u8; cols]; rows];
+    let mut legend = vec![vec![D3SchLegend::Empty; cols]; rows];
+    
+    for (i, row) in raw_schematic.iter().enumerate() {
+        for (j, val) in row.as_bytes().iter().enumerate() {
+            if *val == b'\n' && j != cols {
+                // the newline should be at the end of the columns
+                panic!();
+            }
+            schematic[i][j] = *val;
+            legend[i][j] = SCH_CHARS[val];
+        }
+    }
+    
+    for (i, row) in schematic.iter().enumerate() {
+        for (j, val) in row.iter().enumerate() {
+            if legend[i][j] == D3SchLegend::Symbol {
+                for (ii, jj) in surrounding_coords(i, j, rows, cols) {
+                    if legend[ii][jj] == D3SchLegend::UnclassedNumber {
+
+                    }
+                }
+            }
+        }
+    }
+
+    // println!("{:?}", schematic);
+
+    println!("Day 3, Part 1: {}", 0);
+    println!("Day 3, Part 2: {}", 0);
+
+}
+
+fn surrounding_coords(x: usize, y: usize, xmax: usize, ymax: usize) -> Vec<(usize, usize)> {
+    // in Python I'd write this as an iterator and yield back valid values, but
+    // not sure how to do that in rustland, so will allocate vec and return that?
+    
+    // enumerate() gives `usize` and that's also what indexing wants, so keep with it
+    let x: u32 = x.try_into().unwrap();
+    let y: u32 = y.try_into().unwrap();
+    let xmax: u32 = xmax.try_into().unwrap();
+    let ymax: u32 = ymax.try_into().unwrap();
+
+    let mut coords: Vec<(usize, usize)> = Vec::with_capacity(8);
+    for dx in [-1, 0, 1].iter() {
+        if (x == 0 && *dx == -1) 
+        || (x == xmax - 1 && *dx == 1) {
+            continue;
+        }
+        for dy in [-1, 0, 1].iter() {
+            if (y == 0 && *dy == -1) 
+            || (y == ymax - 1 && *dy == 1) 
+            || (*dx == 0 && *dy == 0) {
+                continue;
+            }
+            coords.push((
+                x.wrapping_add_signed(*dx).try_into().unwrap(), 
+                y.wrapping_add_signed(*dy).try_into().unwrap()
+            ))
+        }
+    }
+    coords
+}   
+
+#[derive(Clone, PartialEq)]
+#[derive(Copy)]
+enum D3SchLegend {
+    Empty,
+    UnclassedNumber,
+    Symbol,
+    RogueNumber,
+    PartNumber,
+}
+
+static SCH_CHARS: phf::Map<u8, D3SchLegend> = phf_map!{
+    b'.' => D3SchLegend::Empty,
+    b'0' => D3SchLegend::UnclassedNumber,
+    b'1' => D3SchLegend::UnclassedNumber,
+    b'2' => D3SchLegend::UnclassedNumber,
+    b'3' => D3SchLegend::UnclassedNumber,
+    b'4' => D3SchLegend::UnclassedNumber,
+    b'5' => D3SchLegend::UnclassedNumber,
+    b'6' => D3SchLegend::UnclassedNumber,
+    b'7' => D3SchLegend::UnclassedNumber,
+    b'8' => D3SchLegend::UnclassedNumber,
+    b'9' => D3SchLegend::UnclassedNumber,
+    b'#' => D3SchLegend::Symbol,
+    b'$' => D3SchLegend::Symbol,
+    b'%' => D3SchLegend::Symbol,
+    b'&' => D3SchLegend::Symbol,
+    b'*' => D3SchLegend::Symbol,
+    b'+' => D3SchLegend::Symbol,
+    b'-' => D3SchLegend::Symbol,
+    b'/' => D3SchLegend::Symbol,
+    b'=' => D3SchLegend::Symbol,
+    b'@' => D3SchLegend::Symbol,
+};
 
 // the "naive" version as per Rust By Example, but simpler to reason about for now
 
