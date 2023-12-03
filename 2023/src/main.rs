@@ -1,3 +1,6 @@
+use core::panic;
+use std::collections::HashMap;
+use std::cmp;
 use std::fs::read_to_string;
 
 // use regex::RegexBuilder;
@@ -20,6 +23,12 @@ const WNS: [WordNums; 9] = [
 ];
 
 fn main() {
+    day1();
+    day2();
+}
+
+fn day1() {
+
     let mut accum = 0u32;
     let mut accum2 = 0u32;
 
@@ -55,7 +64,7 @@ fn main() {
             }
         }
 
-        println!("{} -> {}", line, alt_line);
+        // println!("{} -> {}", line, alt_line);
 
         for c in alt_line.chars() {
             let digit = c.to_digit(10);
@@ -81,29 +90,70 @@ fn main() {
         }
     }
 
-    println!("Part 1: {}", accum);
-    println!("Part 2: {}", accum2);
-    // let pat = r"
-    //     (
-    //         [0-9]  # single digit
-    //         |one   # ...or 1-9 in english
-    //         |two
-    //         |three
-    //         |four
-    //         |five
-    //         |six
-    //         |seven
-    //         |eight
-    //         |nine
-    //     )
-    // ";
-    // let re = RegexBuilder::new(pat)
-    //     .ignore_whitespace(true)
-    //     .build()
-    //     .unwrap();
-
+    println!("Day 1, Part 1: {}", accum);
+    println!("Day 1, Part 2: {}", accum2);
 }
 
+fn day2() {
+    let mut id_accum = 0;
+    let mut accum_pt2 = 0;
+    let (bag_red, bag_green, bag_blue) = (12, 13, 14);
+    for line in read_lines("inputs/day02.txt") {
+        // println!("{:?}", parse_day2_game(&line).draws);
+        let game = parse_day2_game(&line);
+        let mut invalid_draw_found = false;
+        let (mut min_red, mut min_green, mut min_blue) = (0, 0, 0);
+        for draw in game.draws {
+            if draw.0 > bag_red || draw.1 > bag_green || draw.2 > bag_blue {
+                invalid_draw_found = true;
+            }
+            min_red = cmp::max(min_red, draw.0);
+            min_green = cmp::max(min_green, draw.1);
+            min_blue = cmp::max(min_blue, draw.2);
+        }
+        if !invalid_draw_found {
+            id_accum += game.id
+        }
+
+        accum_pt2 += min_red * min_green * min_blue;
+    }
+    println!("Day 2, Part 1: {}", id_accum);
+    println!("Day 2, Part 2: {}", accum_pt2);
+}
+
+struct Day2Game {
+    id: u32,
+    draws: Vec<(i32, i32, i32)>
+}
+
+fn parse_day2_game(line: &str) -> Day2Game {
+    let x: Vec<&str> = line.split(":").collect();
+    if x.len() != 2 {
+        // Day2Game { id: 0, reveals: vec![] }
+        panic!();
+    }
+    let id: u32 = x[0].split(" ").nth(1).unwrap().parse().unwrap();
+    let mut draws: Vec<(i32, i32, i32)> = vec![];
+    for step in x[1].split(";") {
+        let mut g = HashMap::new();
+        for group in step.split(",") {
+            // println!("{}", group);
+            let parts: Vec<&str> = group.trim().split(" ").collect();
+            if parts.len() != 2 {
+                continue;
+            }
+            let count: i32 = parts[0].parse().unwrap();
+            let color: &str = parts[1].trim();
+            g.insert(color, count);
+        }
+        draws.push((
+            *g.entry("red").or_insert(0),
+            *g.entry("green").or_insert(0),
+            *g.entry("blue").or_insert(0),
+        ))
+    }
+    Day2Game { id: id, draws: draws }
+}
 
 // the "naive" version as per Rust By Example, but simpler to reason about for now
 
