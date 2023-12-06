@@ -161,12 +161,12 @@ fn parse_day2_game(line: &str) -> Day2Game {
 fn day3() {
 
     let raw_schematic = read_lines("inputs/day03.txt");
-    
+
     let (rows, cols) = (raw_schematic.len(), raw_schematic[0].len());
-    
+
     let mut schematic = vec![vec![0u8; cols]; rows];
     let mut legend = vec![vec![D3SchLegend::Empty; cols]; rows];
-    
+
     for (i, row) in raw_schematic.iter().enumerate() {
         for (j, val) in row.as_bytes().iter().enumerate() {
             if *val == b'\n' && j != cols {
@@ -177,22 +177,101 @@ fn day3() {
             legend[i][j] = SCH_CHARS[val];
         }
     }
-    
+
     for (i, row) in schematic.iter().enumerate() {
-        for (j, val) in row.iter().enumerate() {
+        for (j, _val) in row.iter().enumerate() {
             if legend[i][j] == D3SchLegend::Symbol {
                 for (ii, jj) in surrounding_coords(i, j, rows, cols) {
-                    if legend[ii][jj] == D3SchLegend::UnclassedNumber {
+                    if legend[ii][jj] == D3SchLegend::RogueNumber {
+                        legend[ii][jj] = D3SchLegend::PartNumber;
 
+                        // flood fill along the line
+                        for jback in (0..jj).rev() {
+                            match legend[ii][jback] {
+                                D3SchLegend::Empty => break,
+                                D3SchLegend::Symbol => break,
+                                _ => legend[ii][jback] = D3SchLegend::PartNumber
+                            }
+                        }
+                        for jfwd in jj..cols {
+                            match legend[ii][jfwd] {
+                                D3SchLegend::Empty => break,
+                                D3SchLegend::Symbol => break,
+                                _ => legend[ii][jfwd] = D3SchLegend::PartNumber
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
+    // debug view
+    let sch_legend = HashMap::from([
+        (D3SchLegend::Empty, '.'),
+        (D3SchLegend::RogueNumber, '?'),
+        (D3SchLegend::PartNumber, 'P'),
+        (D3SchLegend::Symbol, 's'),
+    ]);
+    if false {
+        for row in legend.iter() {
+            for item in row.iter() {
+                print!("{}", sch_legend[item]);
+            }
+            println!("");
+        }
+    }
+
+    let mut accum_part1 = 0u32;
+    for (leg_row, sch_row) in legend.iter().zip(schematic.iter()) {
+        let mut scanning_number = false;
+        let mut number = 0u32;
+
+        println!("{}", std::str::from_utf8(sch_row).unwrap());
+        for item in leg_row.iter() {
+            print!("{}", sch_legend[item]);
+        }
+        println!("");
+
+        for (n_col, (col_leg, col_char)) in leg_row.iter()
+                .zip(sch_row.iter())
+                // .chain([(D3SchLegend::Empty, b'.')].iter())
+                // trying to run one more at the end ^^, didn't work
+                // vv checking last col
+                .enumerate()
+                {
+            let digit_value: u32 = (col_char.wrapping_sub(b'0')) as u32;
+            // match (scanning_number, *col_leg == D3SchLegend::PartNumber) {
+            match (scanning_number, *col_leg == D3SchLegend::PartNumber, n_col == cols-1) {
+                (false, false, _) => continue,
+                // start scanning number
+                (false, true, _) => {
+                    scanning_number = true;
+                    number = digit_value;
+                },
+                // end of num
+                (true, false, _) => {
+                    scanning_number = false;
+                    accum_part1 += number;
+                    // println!("end of number: {}, running total {}", number, accum_part1);
+                }
+                // end of line WHILE scanning
+                (true, true, true) => {
+                    scanning_number = false;
+                    accum_part1 += 10*number + digit_value;
+                    // println!("end of number: {}, running total {}", number, accum_part1);
+                }
+                // middle of scanning number
+                (true, true, _) => {
+                    number = 10*number + digit_value;
+                },
+            }
+        }
+    }
+
     // println!("{:?}", schematic);
 
-    println!("Day 3, Part 1: {}", 0);
+    println!("Day 3, Part 1: {}", accum_part1);
     println!("Day 3, Part 2: {}", 0);
 
 }
@@ -200,39 +279,32 @@ fn day3() {
 fn surrounding_coords(x: usize, y: usize, xmax: usize, ymax: usize) -> Vec<(usize, usize)> {
     // in Python I'd write this as an iterator and yield back valid values, but
     // not sure how to do that in rustland, so will allocate vec and return that?
-    
-    // enumerate() gives `usize` and that's also what indexing wants, so keep with it
-    let x: u32 = x.try_into().unwrap();
-    let y: u32 = y.try_into().unwrap();
-    let xmax: u32 = xmax.try_into().unwrap();
-    let ymax: u32 = ymax.try_into().unwrap();
 
+    // enumerate() gives `usize` and that's also what indexing wants, so keep with it
     let mut coords: Vec<(usize, usize)> = Vec::with_capacity(8);
     for dx in [-1, 0, 1].iter() {
-        if (x == 0 && *dx == -1) 
+        if (x == 0 && *dx == -1)
         || (x == xmax - 1 && *dx == 1) {
             continue;
         }
         for dy in [-1, 0, 1].iter() {
-            if (y == 0 && *dy == -1) 
-            || (y == ymax - 1 && *dy == 1) 
+            if (y == 0 && *dy == -1)
+            || (y == ymax - 1 && *dy == 1)
             || (*dx == 0 && *dy == 0) {
                 continue;
             }
             coords.push((
-                x.wrapping_add_signed(*dx).try_into().unwrap(), 
-                y.wrapping_add_signed(*dy).try_into().unwrap()
+                x.wrapping_add_signed(*dx),
+                y.wrapping_add_signed(*dy)
             ))
         }
     }
     coords
-}   
+}
 
-#[derive(Clone, PartialEq)]
-#[derive(Copy)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
 enum D3SchLegend {
     Empty,
-    UnclassedNumber,
     Symbol,
     RogueNumber,
     PartNumber,
@@ -240,16 +312,16 @@ enum D3SchLegend {
 
 static SCH_CHARS: phf::Map<u8, D3SchLegend> = phf_map!{
     b'.' => D3SchLegend::Empty,
-    b'0' => D3SchLegend::UnclassedNumber,
-    b'1' => D3SchLegend::UnclassedNumber,
-    b'2' => D3SchLegend::UnclassedNumber,
-    b'3' => D3SchLegend::UnclassedNumber,
-    b'4' => D3SchLegend::UnclassedNumber,
-    b'5' => D3SchLegend::UnclassedNumber,
-    b'6' => D3SchLegend::UnclassedNumber,
-    b'7' => D3SchLegend::UnclassedNumber,
-    b'8' => D3SchLegend::UnclassedNumber,
-    b'9' => D3SchLegend::UnclassedNumber,
+    b'0' => D3SchLegend::RogueNumber,
+    b'1' => D3SchLegend::RogueNumber,
+    b'2' => D3SchLegend::RogueNumber,
+    b'3' => D3SchLegend::RogueNumber,
+    b'4' => D3SchLegend::RogueNumber,
+    b'5' => D3SchLegend::RogueNumber,
+    b'6' => D3SchLegend::RogueNumber,
+    b'7' => D3SchLegend::RogueNumber,
+    b'8' => D3SchLegend::RogueNumber,
+    b'9' => D3SchLegend::RogueNumber,
     b'#' => D3SchLegend::Symbol,
     b'$' => D3SchLegend::Symbol,
     b'%' => D3SchLegend::Symbol,
@@ -265,7 +337,7 @@ static SCH_CHARS: phf::Map<u8, D3SchLegend> = phf_map!{
 // the "naive" version as per Rust By Example, but simpler to reason about for now
 
 fn read_lines(filename: &str) -> Vec<String> {
-    read_to_string(filename) 
+    read_to_string(filename)
         .unwrap()  // panic on possible file-reading errors
         .lines()  // split the string into an iterator of string slices
         .map(String::from)  // make each slice into a string
