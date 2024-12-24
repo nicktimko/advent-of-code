@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import logging
 import shutil
 import sys
 import time
@@ -10,6 +11,13 @@ from .io import REPO_ROOT
 
 
 DAY_MODULE_PATH = REPO_ROOT / "aoc24" / "day"
+LOG_LEVELS = {
+    None: logging.WARNING,
+    0: logging.WARNING,
+    1: logging.INFO,
+    2: logging.DEBUG,
+    3: 0, # 'TRACE'
+}
 
 
 def template(day: int) -> None:
@@ -22,7 +30,9 @@ def template(day: int) -> None:
 
     # shutil.copy(template, target)
     with template.open(mode="r") as f_in, target.open(mode="w") as f_out:
-        f_out.write(f_in.read().replace(r"'''DAY'''", str(day)))
+        f_out.write(
+            f_in.read().replace(r"'''DAY'''", str(day)).replace(r'"""DAY"""', str(day))
+        )
 
 
 def main():
@@ -30,8 +40,11 @@ def main():
     parser.add_argument("day", type=int)
     parser.add_argument("--init", action="store_true")
     parser.add_argument("-t", "--time", action="store_true")
+    parser.add_argument("-v", "--verbose", action="count")
     # parser.add_argument("-T", "--timeit", action="store_true")
     args = parser.parse_args()
+
+    logging.basicConfig(level=LOG_LEVELS[args.verbose])# format='%(relativeCreated)6d %(threadName)s %(message)s')
 
     if args.init:
         return template(args.day)

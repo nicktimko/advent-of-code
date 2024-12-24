@@ -39,10 +39,8 @@ def run():
     for match in P2_REGEX.finditer(data):
         if match.group() == "do()":
             enabled = True
-            print('do')
         elif match.group() == "don't()":
             enabled = False
-            print('dont')
         elif enabled:
             n1, n2 = match.groups()
             part2_accum += int(n1) * int(n2)
