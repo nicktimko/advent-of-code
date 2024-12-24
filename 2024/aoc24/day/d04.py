@@ -10,7 +10,7 @@ import logging
 from ..io import read_lines
 
 
-L = logging.getLogger()
+L = logging.getLogger(__name__)
 
 TODAY = 4
 DIRS = ["N", "S", "E", "W", "NE", "NW", "SE", "SW"]
