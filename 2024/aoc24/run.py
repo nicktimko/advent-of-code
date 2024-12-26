@@ -44,7 +44,7 @@ def main():
     # parser.add_argument("-T", "--timeit", action="store_true")
     args = parser.parse_args()
 
-    logging.basicConfig(level=LOG_LEVELS[args.verbose])# format='%(relativeCreated)6d %(threadName)s %(message)s')
+    logging.basicConfig(level=LOG_LEVELS[args.verbose])
 
     if args.init:
         return template(args.day)
